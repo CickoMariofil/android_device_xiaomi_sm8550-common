@@ -11,11 +11,8 @@ from extract_utils.fixups_blob import (
     blob_fixups_user_type,
 )
 from extract_utils.fixups_lib import (
-    lib_fixup_remove_arch_suffix,
-    lib_fixup_vendorcompat,
+    lib_fixups,
     lib_fixups_user_type,
-    libs_clang_rt_ubsan,
-    libs_proto_3_9_1,
 )
 from extract_utils.main import (
     ExtractUtils,
@@ -36,8 +33,7 @@ def lib_fixup_vendor_suffix(lib: str, partition: str, *args, **kwargs):
 
 
 lib_fixups: lib_fixups_user_type = {
-    libs_clang_rt_ubsan: lib_fixup_remove_arch_suffix,
-    libs_proto_3_9_1: lib_fixup_vendorcompat,
+    **lib_fixups,
     (
         'vendor.qti.hardware.qccsyshal@1.0',
         'vendor.qti.hardware.qccsyshal@1.1',
@@ -75,10 +71,17 @@ blob_fixups: blob_fixups_user_type = {
         .add_needed('libbase_shim.so'),
     (
        'vendor/etc/media_codecs_kalama.xml',
-       'vendor/etc/media_codecs_kalama_vendor.xml',
+    ): blob_fixup()
+        .regex_replace(r'\s*<MediaCodec\b[^>]*name=\"c2\.dolby\.[^>]*>[\s\S]*?<\/MediaCodec>', '')
+        .regex_replace('.+media_codecs_(dolby_audio|google_audio|google_c2|google_telephony|vendor_audio).+\n', ''),
+    (
        'vendor/etc/media_codecs_kalama_vendor_without_dvenc.xml',
     ): blob_fixup()
-        .regex_replace('.+media_codecs_(google_audio|google_c2|google_telephony|vendor_audio).+\n', ''),
+        .regex_replace(r'\s*<MediaCodec\b[^>]*name=\"c2\.dolby\.[^>]*>[\s\S]*?<\/MediaCodec>', '')
+        .regex_replace('.+media_codecs_(dolby_audio|google_audio|google_c2|google_telephony|vendor_audio).+\n', ''),
+    'vendor/etc/vintf/manifest/c2_manifest_vendor.xml': blob_fixup()
+        .regex_replace(r'\s*<fqname>@1\.0::IComponentStore/dolby</fqname>', '')
+        .regex_replace('.+DOLBY.+\n', ''),
     'vendor/etc/ueventd.rc' : blob_fixup()
         .add_line_if_missing('\n# Charger\n/sys/class/qcom-battery     night_charging            0660    system  system'),
     (

@@ -61,6 +61,8 @@ PRODUCT_PACKAGES += \
     libqcomvoiceprocessing \
     libvolumelistener
 
+$(call soong_config_set, android_hardware_audio, run_64bit, true)
+
 PRODUCT_COPY_FILES += \
     frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
     frameworks/av/services/audiopolicy/config/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml \
@@ -79,13 +81,16 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/audio/usecaseKvManager.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usecaseKvManager.xml \
     $(LOCAL_PATH)/configs/audio/sku_kalama/adsp_sleep_monitor.conf:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_kalama/adsp_sleep_monitor.conf \
     $(LOCAL_PATH)/configs/audio/sku_kalama/audio_effects.conf:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_kalama/audio_effects.conf \
-    $(LOCAL_PATH)/configs/audio/sku_kalama/audio_effects.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_kalama/audio_effects.xml \
     $(LOCAL_PATH)/configs/audio/sku_kalama/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_kalama/audio_policy_configuration.xml
 
 PRODUCT_COPY_FILES += \
     hardware/qcom-caf/sm8550/audio/primary-hal/configs/common/bluetooth_qti_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/bluetooth_qti_audio_policy_configuration.xml \
     hardware/qcom-caf/sm8550/audio/primary-hal/configs/common/bluetooth_qti_hearing_aid_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/bluetooth_qti_hearing_aid_audio_policy_configuration.xml \
+    hardware/qcom-caf/sm8550/audio/primary-hal/configs/common/codec2/media_codecs_c2_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2_audio.xml \
+    hardware/qcom-caf/sm8550/audio/primary-hal/configs/common/codec2/service/1.0/c2audio.vendor.base-arm64.policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/c2audio.vendor.base-arm64.policy \
+    hardware/qcom-caf/sm8550/audio/primary-hal/configs/common/codec2/service/1.0/c2audio.vendor.ext-arm64.policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/c2audio.vendor.ext-arm64.policy \
     hardware/qcom-caf/sm8550/audio/pal/configs/kalama/card-defs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/card-defs.xml \
+    hardware/qcom-caf/sm8550/audio/primary-hal/configs/kalama/audio_effects.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_kalama/audio_effects.xml \
     hardware/qcom-caf/sm8550/audio/primary-hal/configs/kalama/microphone_characteristics.xml:$(TARGET_COPY_OUT_VENDOR)/etc/microphone_characteristics.xml
 
 # Bluetooth
@@ -117,10 +122,6 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.camera.full.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.full.xml \
     frameworks/native/data/etc/android.hardware.camera.raw.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.raw.xml
 
-# CAS
-PRODUCT_PACKAGES += \
-    android.hardware.cas@1.2-service
-
 # Display
 PRODUCT_PACKAGES += \
     android.hardware.graphics.mapper@4.0-impl-qti-display \
@@ -148,10 +149,9 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.fingerprint.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.fingerprint.xml
 
 # Fstab
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/init/charger_fstab.qti:$(TARGET_COPY_OUT_RECOVERY)/root/vendor/etc/charger_fstab.qti \
-    $(LOCAL_PATH)/init/fstab.qcom:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.qcom \
-    $(LOCAL_PATH)/init/fstab.qcom:$(TARGET_COPY_OUT_VENDOR_RAMDISK)/first_stage_ramdisk/fstab.qcom
+PRODUCT_PACKAGES += \
+    fstab.qcom \
+    fstab.qcom.vendor_ramdisk
 
 # Graphics
 PRODUCT_PACKAGES += \
@@ -162,7 +162,9 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.vulkan.compute-0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.compute-0.xml \
     frameworks/native/data/etc/android.hardware.vulkan.level-1.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.level-1.xml \
     frameworks/native/data/etc/android.hardware.vulkan.version-1_1.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.version-1_1.xml \
-    frameworks/native/data/etc/android.hardware.vulkan.version-1_3.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.version-1_3.xml
+    frameworks/native/data/etc/android.hardware.vulkan.version-1_3.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.version-1_3.xml \
+    frameworks/native/data/etc/android.software.opengles.deqp.level-2022-03-01.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.opengles.deqp.level.xml \
+    frameworks/native/data/etc/android.software.vulkan.deqp.level-2022-03-01.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.vulkan.deqp.level.xml
 
 # GNSS
 PRODUCT_COPY_FILES += \
@@ -178,9 +180,9 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/permissions/privapp-permissions-hotword.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/privapp-permissions-hotword.xml
 
 # Init
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/init/init.sm8550.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.sm8550.rc \
-    $(LOCAL_PATH)/init/init.recovery.qcom.rc:recovery/root/init.recovery.qcom.rc
+PRODUCT_PACKAGES += \
+    init.sm8550.rc \
+    init.recovery.qcom.rc
 
 # IPA
 PRODUCT_PACKAGES += \
@@ -348,13 +350,13 @@ PRODUCT_PACKAGES += \
 
 # Touchscreen
 PRODUCT_PACKAGES += \
+    TouchOrientation \
     vendor.lineage.touch-service.xiaomi
+
+$(call soong_config_set, XIAOMI_TOUCH, HIGH_TOUCH_POLLING_PATH, /sys/devices/virtual/touch/touch_dev/bump_sample_rate)
 
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml
-
-# Updatable APEXes
-$(call inherit-product, $(SRC_TARGET_DIR)/product/updatable_apex.mk)
 
 # Update engine
 PRODUCT_PACKAGES += \
